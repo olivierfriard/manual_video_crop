@@ -17,6 +17,7 @@ VIDEO_OUTPUT = str(
 # Dimensioni predefinite del ROI
 ROI_W = 200
 ROI_H = 200
+OBSCURE_FRAME = True
 
 mouse_x, mouse_y = 0, 0
 roi_confirmed = False
@@ -30,7 +31,7 @@ def mouse_move(event, x, y, flags, param):
 
 
 def main():
-    global roi_confirmed, frame_ready, ROI_W, ROI_H
+    global roi_confirmed, frame_ready, ROI_W, ROI_H, OBSCURE_FRAME
 
     cap = cv2.VideoCapture(VIDEO_INPUT)
     fps = cap.get(cv2.CAP_PROP_FPS)
@@ -67,8 +68,7 @@ def main():
             overlay = display.copy()
             alpha = 0.60  # 0 = trasparente, 1 = opaco
 
-            # Oscura tutto il frame
-            if False:
+            if OBSCURE_FRAME:
                 overlay[:] = (0, 0, 0)
                 # Ripristina la zona del ROI NON oscura
                 overlay[y1 : y1 + ROI_H, x1 : x1 + ROI_W] = display[
@@ -85,7 +85,7 @@ def main():
 
             cv2.putText(
                 display,
-                "Muovi mouse. SPACE=Conferma ROI, ESC=Esci",
+                "Move mouse. SPACE=Confirm ROI, ESC=Esci",
                 (10, 25),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
@@ -118,6 +118,10 @@ def main():
                     frame_idx = max(0, frame_idx - 1)
                     print("↩ Undo eseguito, torno al frame", frame_idx)
                     break  # torna al while principale
+
+            if key == ord("o"):  # UNDO
+                OBSCURE_FRAME = not OBSCURE_FRAME
+                break
 
             if key == ord("s"):  # Skip frame
                 frame_idx += 1
