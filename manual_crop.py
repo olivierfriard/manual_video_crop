@@ -185,6 +185,7 @@ def main():
         x, y = crops[frame_idx]
         roi_crop = frame[y : y + max_size, x : x + max_size]
         out.write(roi_crop)
+        print(frame_idx)
         frame_idx += 1
     out.release()
     cap.release()
