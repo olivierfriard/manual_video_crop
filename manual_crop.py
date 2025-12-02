@@ -171,6 +171,8 @@ def main():
         max_size = ROI_H
         crops = [(x, y) for x, y, _ in crops]
 
+    print(f"creating cropped video ({max_size}x{max_size})")
+
     fourcc = cv2.VideoWriter_fourcc(*"mp4v")
     out = cv2.VideoWriter(VIDEO_OUTPUT, fourcc, fps, (max_size, max_size))
 
