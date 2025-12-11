@@ -180,6 +180,9 @@ def main():
             )
 
     # ffmpeg
+    print(
+        f'ffmpeg -i "{sys.argv[1]}" -filter_complex "[0:v]sendcmd=f={str(CROP_OUTPUT)}" "{VIDEO_OUTPUT}" '
+    )
     os.system(
         f'ffmpeg -i "{sys.argv[1]}" -filter_complex "[0:v]sendcmd=f={str(CROP_OUTPUT)}" "{VIDEO_OUTPUT}" '
     )
