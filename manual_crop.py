@@ -9,7 +9,7 @@ from pathlib import Path
 
 import cv2
 
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 
 VIDEO_INPUT = sys.argv[1]
 VIDEO_OUTPUT = str(
