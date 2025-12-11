@@ -3,6 +3,7 @@ Manual cropping of a video
 
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -95,7 +96,7 @@ def main():
 
             cv2.putText(
                 display,
-                f"frame: {frame_idx}  Move mouse. SPACE/left click=Confirm ROI, ESC=Esci",
+                f"frame: {frame_idx} / {frame_count}   Move mouse. SPACE/left click=Confirm ROI, ESC=Esci",
                 (10, 25),
                 cv2.FONT_HERSHEY_SIMPLEX,
                 0.6,
@@ -144,7 +145,8 @@ def main():
         # Applica crop
         if roi_confirmed:
             # roi_crop = frame[y1 : y1 + ROI_H, x1 : x1 + ROI_W]
-            crops.append((x1, y1, ROI_H))
+            print(mouse_x, mouse_y)
+            crops.append((mouse_x, mouse_y, ROI_H))
             frame_idx += 1
         # out.write(roi_crop)
 
@@ -154,53 +156,32 @@ def main():
     all_sizes = set([x[2] for x in crops])
     if len(all_sizes) > 1:
         max_size = max(all_sizes)
-        print(f"{max_size=}")
-        crops2 = []
-        for x, y, _ in crops:
-            if x < max_size:
-                x = max_size
-            if y < max_size:
-                y = max_size
-            if x > width - max_size:
-                x = width - max_size
-            if y > height - max_size:
-                y = height - max_size
-            crops2.append((x, y))
-        crops = crops2
     else:
         max_size = ROI_H
-        crops = [(x, y) for x, y, _ in crops]
 
-    print(f"creating cropped video ({max_size}x{max_size})")
+    crops = [(x, y) for x, y, _ in crops]
+    print(f"{max_size=}")
 
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    out = cv2.VideoWriter(VIDEO_OUTPUT, fourcc, fps, (max_size, max_size))
+    ms = 1 / fps
 
-    cap = cv2.VideoCapture(VIDEO_INPUT)
-    frame_idx = 0
-    while cap.isOpened():
-        ret, frame = cap.read()
-        if frame_idx >= len(crops):
-            break
-        x, y = crops[frame_idx]
-        roi_crop = frame[y : y + max_size, x : x + max_size]
-        out.write(roi_crop)
-        print(frame_idx)
-        frame_idx += 1
-    out.release()
-    cap.release()
-    cv2.destroyAllWindows()
+    CROP_OUTPUT = str(
+        Path(sys.argv[2]) / Path(Path(VIDEO_INPUT).stem + "_crop").with_suffix(".txt")
+    )
+    VIDEO_OUTPUT = str(
+        Path(sys.argv[2])
+        / Path(Path(VIDEO_INPUT).stem + "_cropped").with_suffix(".mp4")
+    )
 
-    # print(crops)
-    # if crops:
-    #    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    #    out = cv2.VideoWriter(VIDEO_OUTPUT, fourcc, fps, (ROI_W, ROI_H))
-    #    for c in crops:
-    #        out.write(c)
-    #    out.release()
-    #    print("Video salvato:", VIDEO_OUTPUT)
+    with open(CROP_OUTPUT, "w") as f_out:
+        for idx, (x, y) in enumerate(crops):
+            f_out.write(
+                f"{round(idx * ms, 3)}   crop w {max_size}, crop h {max_size}, crop x {round(x - max_size / 2)}, crop y {round(y - max_size / 2)};\n"
+            )
 
-    # print("Video salvato:", VIDEO_OUTPUT)
+    # ffmpeg
+    os.system(
+        f'ffmpeg -i "{sys.argv[1]}" -filter_complex "[0:v]sendcmd=f=crop.txt,crop" "{VIDEO_OUTPUT}" '
+    )
 
 
 if __name__ == "__main__":
