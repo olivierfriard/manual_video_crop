@@ -179,6 +179,11 @@ def main():
                 f"{round(idx * ms, 3)}   crop w {max_size}, crop h {max_size}, crop x {round(x - max_size / 2)}, crop y {round(y - max_size / 2)};\n"
             )
 
+    if sys.platform.startswith("win"):
+        CROP_OUTPUT = CROP_OUTPUT.replace(r'\', '/').replace('c:', ''))
+
+    print(f"{CROP_OUTPUT=}")
+
     # ffmpeg
     print(
         f'ffmpeg -i "{sys.argv[1]}" -filter_complex "[0:v]sendcmd=f={str(CROP_OUTPUT)}" "{VIDEO_OUTPUT}" '
