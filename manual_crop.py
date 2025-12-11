@@ -185,12 +185,9 @@ def main():
     print(f"{CROP_OUTPUT=}")
 
     # ffmpeg
-    print(
-        f'ffmpeg -y -i "{sys.argv[1]}" -filter_complex "[0:v]sendcmd=f={str(CROP_OUTPUT)},crop=iw:ih" "{VIDEO_OUTPUT}" '
-    )
-    os.system(
-        f'ffmpeg -y -i "{sys.argv[1]}" -filter_complex "[0:v]sendcmd=f={str(CROP_OUTPUT)},crop=iw:ih" "{VIDEO_OUTPUT}" '
-    )
+    command = f'ffmpeg -y -i "{sys.argv[1]}" -filter_complex "[0:v]sendcmd=f={str(CROP_OUTPUT)},crop=iw:ih" "{VIDEO_OUTPUT}" '
+    print(command)
+    os.system(command)
 
 
 if __name__ == "__main__":
