@@ -180,7 +180,7 @@ def main():
             )
 
     if sys.platform.startswith("win"):
-        CROP_OUTPUT = CROP_OUTPUT.replace(r'\', r'/').replace('c:', '')
+        CROP_OUTPUT = CROP_OUTPUT.replace("\\", "/").replace("c:", "")
 
     print(f"{CROP_OUTPUT=}")
 
