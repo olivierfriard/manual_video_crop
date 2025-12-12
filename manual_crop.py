@@ -49,10 +49,14 @@ def main():
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     print(f"resolution: {width}x{height}")
 
+    init_size = (width, height)
+    desired_size = tuple(init_size)
+
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     crops = []  # lista dei crop salvati
     frame_idx = 0
+    factor = 1
 
     cv2.namedWindow("Seleziona ROI")
     cv2.setMouseCallback("Seleziona ROI", mouse_move)
@@ -69,10 +73,26 @@ def main():
 
         while not roi_confirmed:
             # Calcola coordinate ROI centrata sul cursore
-            x1 = max(0, mouse_x - ROI_W // 2)
-            y1 = max(0, mouse_y - ROI_H // 2)
-            x1 = min(x1, frame_w - ROI_W)
-            y1 = min(y1, frame_h - ROI_H)
+            if desired_size != init_size:
+                x1 = max(0, mouse_x - ROI_W // 2)
+                y1 = max(0, mouse_y - ROI_H // 2)
+                x1 = min(x1, frame_w - ROI_W)
+                y1 = min(y1, frame_h - ROI_H)
+
+                factor = init_size[0] // desired_size[0]
+
+                x1 *= factor
+                y1 *= factor
+
+                print(f"resized {x1=} {y1=}")
+
+            else:
+                x1 = max(0, mouse_x - ROI_W // 2)
+                y1 = max(0, mouse_y - ROI_H // 2)
+                x1 = min(x1, frame_w - ROI_W)
+                y1 = min(y1, frame_h - ROI_H)
+
+                print(f"{x1=} {y1=}")
 
             # Clone per disegnare overlay
             display = frame.copy()
@@ -107,12 +127,26 @@ def main():
             )
 
             # desired_size = (800, 600)
-            # resized = cv2.resize(display, desired_size)
-            # cv2.imshow("Seleziona ROI", resized)
-
-            cv2.imshow("Seleziona ROI", display)
+            if desired_size != init_size:
+                resized = cv2.resize(display, desired_size)
+                cv2.imshow("Seleziona ROI", resized)
+            else:
+                cv2.imshow("Seleziona ROI", display)
 
             key = cv2.waitKey(15) & 0xFF
+
+            # image size
+            if key == ord("z"):
+                desired_size = tuple((desired_size[0] // 2, desired_size[1] // 2))
+                # ROI_W //= 2
+                # ROI_H //= 2
+                print(desired_size)
+            if key == ord("x"):
+                desired_size = tuple((desired_size[0] * 2, desired_size[1] * 2))
+                # ROI_W *= 2
+                # ROI_H *= 2
+
+                print(desired_size)
 
             if key == 43:
                 ROI_W += 50
