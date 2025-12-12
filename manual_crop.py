@@ -35,21 +35,24 @@ def mouse_move(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         advance = True
         roi_confirmed = True
-        print(advance)
 
 
 def main():
     global roi_confirmed, frame_ready, ROI_W, ROI_H, OBSCURE_FRAME, advance
 
     cap = cv2.VideoCapture(VIDEO_INPUT)
+
     fps = cap.get(cv2.CAP_PROP_FPS)
     print(f"{fps=}")
+
+    width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    print(f"resolution: {width}x{height}")
+
     frame_count = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
     crops = []  # lista dei crop salvati
     frame_idx = 0
-
-    out = None  # inizializzato dopo lettura primo frame con dimensioni corrette
 
     cv2.namedWindow("Seleziona ROI")
     cv2.setMouseCallback("Seleziona ROI", mouse_move)
@@ -57,8 +60,6 @@ def main():
     while frame_idx < frame_count:
         cap.set(cv2.CAP_PROP_POS_FRAMES, frame_idx)
         ret, frame = cap.read()
-        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         if not ret:
             break
         advance = False
@@ -105,11 +106,13 @@ def main():
                 2,
             )
 
+            # desired_size = (800, 600)
+            # resized = cv2.resize(display, desired_size)
+            # cv2.imshow("Seleziona ROI", resized)
+
             cv2.imshow("Seleziona ROI", display)
 
             key = cv2.waitKey(15) & 0xFF
-            if key != 255:
-                print(key)
 
             if key == 43:
                 ROI_W += 50
@@ -124,6 +127,9 @@ def main():
                 cv2.destroyAllWindows()
                 frame_idx = frame_count
                 break
+
+            if key == ord("q"):  # quit without generating the cropped video
+                sys.exit()
 
             if key == ord("u"):  # UNDO
                 if crops:
@@ -145,8 +151,7 @@ def main():
 
         # Applica crop
         if roi_confirmed:
-            # roi_crop = frame[y1 : y1 + ROI_H, x1 : x1 + ROI_W]
-            print(mouse_x, mouse_y)
+            print(f"coordinates: {mouse_x} {mouse_y}")
             crops.append((mouse_x, mouse_y, ROI_H))
             frame_idx += 1
         # out.write(roi_crop)
