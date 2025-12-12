@@ -32,6 +32,7 @@ def mouse_move(event, x, y, flags, param):
     global mouse_x, mouse_y, advance, roi_confirmed
     if event == cv2.EVENT_MOUSEMOVE:
         mouse_x, mouse_y = x, y
+        print(f"{mouse_x=} {mouse_y=}")
     if event == cv2.EVENT_LBUTTONDOWN:
         advance = True
         roi_confirmed = True
