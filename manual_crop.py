@@ -2,6 +2,7 @@
 Manual cropping of a video
 """
 
+import argparse
 import os
 import sys
 from pathlib import Path
@@ -28,6 +29,46 @@ frame_ready = False
 advance = True
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(
+        description="Manual video cropping with interactive ROI selection",
+        formatter_class=argparse.RawTextHelpFormatter,
+    )
+
+    parser.add_argument("video", help="Input video file")
+
+    parser.add_argument(
+        "output_dir", help="Directory where cropped video and crop script will be saved"
+    )
+
+    parser.add_argument("--version", action="version", version="%(prog)s 0.0.4")
+
+    parser.epilog = """
+Interactive controls:
+
+Mouse:
+  Move mouse        Move ROI center
+  Left click / SPACE  Confirm ROI for current frame
+
+Keyboard:
+  z     Zoom OUT (reduce display resolution)
+  x     Zoom IN  (increase display resolution)
+  +     Increase ROI size
+  -     Decrease ROI size
+  o     Toggle frame obscuring outside ROI
+  s     Skip current frame
+  u     Undo last crop
+  q     Quit immediately (no output)
+  ESC   Exit and generate output
+
+Notes:
+- Zoom affects ONLY visualization, not crop accuracy
+- ROI size is always in original video pixels
+"""
+
+    return parser.parse_args()
+
+
 def mouse_move(event, x, y, flags, param):
     global mouse_x, mouse_y, advance, roi_confirmed
     if event == cv2.EVENT_MOUSEMOVE:
@@ -40,6 +81,11 @@ def mouse_move(event, x, y, flags, param):
 
 def main():
     global roi_confirmed, frame_ready, ROI_W, ROI_H, OBSCURE_FRAME, advance
+
+    args = parse_args()
+
+    VIDEO_INPUT = args.video
+    OUTPUT_DIR = args.output_dir
 
     cap = cv2.VideoCapture(VIDEO_INPUT)
 
@@ -210,11 +256,10 @@ def main():
     ms = 1 / fps
 
     CROP_OUTPUT = str(
-        Path(sys.argv[2]) / Path(Path(VIDEO_INPUT).stem + "_crop").with_suffix(".txt")
+        Path(OUTPUT_DIR) / Path(Path(VIDEO_INPUT).stem + "_crop").with_suffix(".txt")
     )
     VIDEO_OUTPUT = str(
-        Path(sys.argv[2])
-        / Path(Path(VIDEO_INPUT).stem + "_cropped").with_suffix(".mp4")
+        Path(OUTPUT_DIR) / Path(Path(VIDEO_INPUT).stem + "_cropped").with_suffix(".mp4")
     )
 
     with open(CROP_OUTPUT, "w") as f_out:
@@ -231,7 +276,7 @@ def main():
 
     # ffmpeg
     command = (
-        f'ffmpeg -y -i "{sys.argv[1]}" '
+        f'ffmpeg -y -i "{VIDEO_INPUT}" '
         f'-filter_complex "[0:v]sendcmd=f={str(CROP_OUTPUT)},crop=iw:ih" '
         f'"{VIDEO_OUTPUT}" '
     )
