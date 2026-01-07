@@ -8,7 +8,8 @@ from pathlib import Path
 
 import cv2
 
-__version__ = "0.0.4"
+__version__ = "0.0.5"
+__version_date__ = "2026-01-07"
 
 VIDEO_INPUT = sys.argv[1]
 VIDEO_OUTPUT = str(
@@ -128,12 +129,8 @@ def main():
             cv2.rectangle(
                 display, (dx1, dy1), (dx1 + dROI_W, dy1 + dROI_H), (0, 255, 0), 2
             )
-            cv2.line(
-                display, (dx1, dy1), (dx1 + dROI_W, dy1 + dROI_H), (0, 255, 0), 1
-            )
-            cv2.line(
-                display, (dx1 + dROI_W, dy1), (dx1, dy1 + dROI_H), (0, 255, 0), 1
-            )
+            cv2.line(display, (dx1, dy1), (dx1 + dROI_W, dy1 + dROI_H), (0, 255, 0), 1)
+            cv2.line(display, (dx1 + dROI_W, dy1), (dx1, dy1 + dROI_H), (0, 255, 0), 1)
 
             cv2.putText(
                 display,
